@@ -5,5 +5,5 @@ def isPalindrome(src):
             return False
     return True
 
-s = input()
-print(isPalindrome(s))
+# s = input()
+# print(isPalindrome(s))

@@ -8,7 +8,7 @@ def has_33(nums):
 
 
 #Example usage
-tests = [[1, 3, 1, 3],[1, 3, 3, 1],[1, 1, 3, 3, 4],[1, 1, 5, 3, 3],[1, 1, 5, 4, 3]]
-for x in tests:
-    print(f"Test: {x}, \tresult: {has_33(x)}")
+# tests = [[1, 3, 1, 3],[1, 3, 3, 1],[1, 1, 3, 3, 4],[1, 1, 5, 3, 3],[1, 1, 5, 4, 3]]
+# for x in tests:
+#     print(f"Test: {x}, \tresult: {has_33(x)}")
 

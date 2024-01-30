@@ -8,5 +8,5 @@ def uniq(L):
         
 
 
-test = [x for x in input().split()]
-print(uniq(test))
+# test = [x for x in input().split()]
+# print(uniq(test))

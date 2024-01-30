@@ -9,7 +9,7 @@ def spy_game(nums):
     return False
 
 
-tests = [[1,2,4,0,0,7,5],[1,0,2,4,0,5,7],[1,7,2,0,4,5,0]]
-for x in tests: 
-    print(spy_game(x))
+# tests = [[1,2,4,0,0,7,5],[1,0,2,4,0,5,7],[1,7,2,0,4,5,0]]
+# for x in tests: 
+#     print(spy_game(x))
     

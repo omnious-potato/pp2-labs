@@ -6,5 +6,5 @@ def solve(numheads, numlegs):
 
     return (chickens, rabbits)
 
-ans = solve(35, 94)
-print(f"There are {ans[0]} chickens and {ans[1]} rabbits in a farm!")
+# ans = solve(35, 94)
+# print(f"There are {ans[0]} chickens and {ans[1]} rabbits in a farm!")

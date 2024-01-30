@@ -15,6 +15,6 @@ def filter_prime(L):
 
 
 
-l = [int(x) for x in input().split()]
-filter_prime(l)
-print(l)
+# l = [int(x) for x in input().split()]
+# filter_prime(l)
+# print(l)
