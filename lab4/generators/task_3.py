@@ -12,7 +12,6 @@ def foo(n):
     obj = divisibility_gen(n)
     L = list(obj) #after that generator is exhausted and wouldn't yield any values
     print(f"Printing list made from generator object: {L}")
-    
 
 
     obj = divisibility_gen(n)
