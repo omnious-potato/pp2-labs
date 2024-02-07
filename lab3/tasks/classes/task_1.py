@@ -5,14 +5,15 @@ class PowerfulString:
     def getString(self):
         self.data = input()
 
-    def printString(self):
-        print(self.data)
+    # def printString(self):
+    #     print(self.data)
 
+    def __str__(self) -> str:
+        return self.data
 
 
 if __name__ == "__main__":
     s = PowerfulString()
     print("getStringMethod input: \t\t", end="")
     s.getString()
-    print("printStringMethod output: \t", end="")
-    s.printString()
+    print(f"printStringMethod output: \t{s}")
