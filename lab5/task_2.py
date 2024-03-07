@@ -12,8 +12,8 @@ with open(path + "/"+ wordfile) as f:
     data = f.read()
 
 #matches a string that has an `'a'` followed by two to three `'b'`
-#out = re.match(r'\w*abb[b?]\w*', data)
-out = re.findall(r'a[b]{2,3}[^b]', data)
+#to output a whole word (string) with a match not just a string piece '.*' (any) prefix and '[^b]*' (anything except containing 'b') suffix
+out = re.findall(r'.*a[b]{2,3}[^b]*', data)
 
 if(out is not None):
     for x in out:
