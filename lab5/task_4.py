@@ -11,8 +11,8 @@ print(f"Regex matching from file: {path}/{wordfile}")
 with open(path + "/"+ wordfile) as f:
     data = f.read()
 
-#the sequences of one upper case letter followed by lower case letters.
-out = re.findall(r'[A-Z][a-z]+', data)
+#the sequences of one upper case letter followed by lower case letters ('\b' is optional to eliminate non-conventional words like aAa matches)
+out = re.findall(r'\b[A-Z][a-z]+', data)
 
 print(out)
 

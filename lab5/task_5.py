@@ -13,7 +13,10 @@ with open(path + "/"+ wordfile) as f:
 
 raw_data = r'{}'.format(data)
 #matches a string that has an 'a' followed by anything, ending in 'b'
-out = re.findall(r'.*a.*b', data)
+out = re.findall(r'.*a.*b$', data, re.MULTILINE)
+
+#another possible solution
+#out = re.findall(r'.*a.*b', data)
 
 #print(out)
 
