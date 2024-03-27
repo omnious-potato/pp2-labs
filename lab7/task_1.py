@@ -49,11 +49,12 @@ while not done:
         current_second = current_time.second
 
         #hour_angle = -360.0 *  current_hour/ 60.0
-        hour_angle = -180 - 360 * (current_hour) / 12.0
+        hour_angle = -180 - 360 * current_hour / 12.0 - 360 * current_minute / 60.0 / 12.0
+        print(hour_angle)
         minute_angle = -360.0 *  current_minute / 60.0 - 182
-        
 
-
+        #possible improvements - sync once, then move with ticktime
+        #is_clock_synced = True
 
     clock_center_pos = (screen.get_width()/2, screen.get_height()/2)
     
