@@ -62,8 +62,7 @@ while not done:
 
     blitRotateZoomXY(screen, hour_hand_img, clock_center_pos, (70, 23), hour_angle)
     blitRotateZoomXY(screen, minute_hand_img, clock_center_pos, (40, 24), minute_angle)
-    
-    #screen.blit(cannon_mount, (pos[0]-43, pos[1]-16))
+
     pygame.display.flip()
 
 
