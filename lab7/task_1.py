@@ -20,6 +20,7 @@ def blitRotateZoomXY(surf, original_image, origin, pivot, angle, scale_x=1, scal
     surf.blit(rotozoom_image, rect)
 
 
+pygame.display.set_caption('Mickey Clock')
 
 bg = pygame.image.load("images/mickeyclock_decap.png")#background image
 
@@ -50,7 +51,6 @@ while not done:
 
         #hour_angle = -360.0 *  current_hour/ 60.0
         hour_angle = -180 - 360 * current_hour / 12.0 - 360 * current_minute / 60.0 / 12.0
-        print(hour_angle)
         minute_angle = -360.0 *  current_minute / 60.0 - 182
 
         #possible improvements - sync once, then move with ticktime
