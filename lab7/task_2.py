@@ -5,7 +5,7 @@ from PIL import Image
 
 local_gif_counter = 0
 
-def split_into_frame(file):
+def split_into_frames(file):
     gif = Image.open(file)
 
     frames = []
@@ -51,14 +51,11 @@ class AudioPlayer:
         self.window = pygame.display.set_mode((self.window_width, self.window_height))
         
         global frames
-        frames = split_into_frame('images/cat-jam-cat.gif')
+        frames = split_into_frames('images/cat-jam-cat.gif')
         pygame.display.set_caption('Audio Player')
         
         self.font = pygame.font.SysFont(None, 36)
         self.clock = pygame.time.Clock()
-
-        
-
         
         
     def load_track(self):
@@ -105,7 +102,7 @@ class AudioPlayer:
                         self.prev_track()
                         
             self.draw_window()
-            self.clock.tick(60)
+            self.clock.tick(15) # as there's just text and GIF, no need for custom delays and timers, just set clock lower to make GIF animation not too fast
         
 
     def draw_window(self):
@@ -124,11 +121,13 @@ class AudioPlayer:
             
         if self.playing:
             local_gif_counter = (local_gif_counter + 1) % len(frames)
+
+        print(local_gif_counter)
     
 
         status_text = f"Paused: {playlist[self.current_track]}" if self.paused else f"Now playing: {playlist[self.current_track]}" if self.playing else "Stopped"
         text_surface = self.font.render(status_text, True, (255, 255, 255))
-        text_rect = text_surface.get_rect(center=(self.window_width/2, self.window_height/2))
+        text_rect = text_surface.get_rect(center=(self.window_width * 3/4, self.window_height/2))
         self.window.blit(text_surface, text_rect)
         
         pygame.display.update()
