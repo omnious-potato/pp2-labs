@@ -72,21 +72,21 @@ class Enemy(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite): 
     def __init__(self):
         super().__init__()
-        self.image = pygame.transform.scale(pygame.image.load("./images/coin.jpg"), (40, 40))
+        self.image = pygame.transform.scale(pygame.image.load("./images/coin.png"), (40, 30))
 
         self.rect = self.image.get_rect()
-        self.rect.center = (10 + int((WIDTH - 10) * random.random()), 5)
+        self.rect.center = (40 + int((WIDTH - 80) * random.random()), 5)
 
         self.price = 1 
     
     def respawn(self):
-        self.rect.center = (10 + int((WIDTH - 10) * random.random()), 5)
+        self.rect.center = (40 + int((WIDTH - 80) * random.random()), 5)
 
     def move(self):
         if self.rect[1] + self.rect[3] < HEIGHT :
             self.rect.move_ip(0, 3)
         else:
-            self.rect.center = (10 + int((WIDTH - 10) * random.random()), 5)
+            self.rect.center = (40 + int((WIDTH - 80) * random.random()), 5)
 
 buffs = pygame.sprite.Group() #coins/pickups etc
 enemies = pygame.sprite.Group() #oncoming cars/obstacles
