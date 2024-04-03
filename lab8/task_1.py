@@ -130,7 +130,7 @@ while not done:
     actual_score_rect = actual_score.get_rect(topright = (WIDTH - 10, 0))
     screen.blit(actual_score, actual_score_rect)
 
-
+    #handling enemy collection
     if pygame.sprite.spritecollideany(P1, enemies):
         pygame.mixer.music.stop()
         pygame.mixer.Sound("./audio/crash.wav").play()
@@ -147,6 +147,7 @@ while not done:
         pygame.quit()
         sys.exit()        
 
+    #handling coin collection
     collided_coin = pygame.sprite.spritecollideany(P1, buffs) 
     if collided_coin != None:
         P1.coin_score += collided_coin.price
