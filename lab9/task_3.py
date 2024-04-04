@@ -38,7 +38,8 @@ base_layer = screen.copy()
 clock = pygame.time.Clock()
 
 LMBpressed = False
-THICKNESS = 5
+THICKNESS = 5 
+SKEWNESS = 1
 
 #This used for 2-point tools tracking while dragging the mouse along the canvas
 currX = None
@@ -63,26 +64,66 @@ def calculate_square(x1, y1, x2, y2):
     return pygame.Rect(min(x1, x2), min(y1, y2), side, side)
     
 
+
+def draw_rhombus(surface, color, x1, y1, x2, y2, stroke):
+    points = [(x2, y2), (x1, y1)]
+    
+    
+    diagonal= (x2 - x1, y2 - y1)
+    half_diag = (diagonal[0]/2, diagonal[1]/2)
+
+    midpoint = ((x1 + x2)/2,(y1+y2)/2)
+    side_one =(-diagonal[1] + midpoint[0], diagonal[0] + midpoint[1])
+    side_length = math.sqrt(side_one[0]**2 + side_one[1]**2)
+    side_two =(diagonal[1] + midpoint[0], -diagonal[0] + midpoint[1])
+
+    if side_length < 1:
+        return
+    points.append(side_one)
+    points.append(side_two)
+
+    # pygame.draw.polygon(surface, color, points, stroke)
+    for x in points:
+        pygame.draw.circle(surface, color, x, stroke)
+
+
 def draw_right_triangle(surface, color, x1, y1, x2, y2, stroke):
     points = [(x1, y1), (x2, y2)]
 
-    direction_vector = (x2 - x1, y2 - y1)    
-    points.append((x2 + direction_vector[1], y2 - direction_vector[0]))
+    #let skewness variable be parameter for angle ratio in right triangle
+    angle_ratio = 1/SKEWNESS
+    alpha_angle = math.pi/(2 * angle_ratio + 2)
     
+    hypo_vector = (x2 - x1, y2 - y1)
+    hypo_length = math.sqrt(hypo_vector[0]**2 + hypo_vector[1]**2)
+    if hypo_length < 1:
+        return
+
+    side_length = hypo_length * math.cos(alpha_angle)
+    
+    side_vector = (hypo_vector[0] * side_length / hypo_length, hypo_vector[1] * side_length / hypo_length) #length-normalised
+    side_vector = (side_vector[0] * math.cos(alpha_angle) - side_vector[1] * math.sin(alpha_angle), \
+                   side_vector[0] * math.sin(alpha_angle) + side_vector[1] * math.cos(alpha_angle)) #angle-normalised
+    
+    points.append((side_vector[0] + x1, side_vector[1] + y1))
     pygame.draw.polygon(surface, color, points, stroke)
 
 
+#draws equilateral triangle with any rotational orientation
 def draw_equilateral_triangle(surface, color, x1, y1, x2, y2, stroke):
     points = [(x2, y2)]
     height = math.sqrt((x1-x2)**2 + (y1 - y2)**2)
     side = int(height /math.sin(math.radians(60)))
     
+    #vector of height from point to base
     height_vector  = (x2 - x1, y2 - y1)
-    height = math.sqrt(height_vector[0]**2 + height_vector[1]**2)
     if height < 1:
-        return 
+        return #subpixel heights aren't supported
+    
+    #two orthogonal vector from base intersection to side vertices
     side_vector = (-height_vector[1] /height * side / 2 + x1 , height_vector[0] / height * side / 2 + y1)
     opposite_vector = (height_vector[1] /height * side / 2 + x1 , -height_vector[0] / height * side / 2 + y1)
+    
     points.append(side_vector)
     points.append(opposite_vector)
 
@@ -147,6 +188,8 @@ while not done:
                     draw_equilateral_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
                 elif currentTool == Tool.RightTriangle:
                     draw_right_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
+                elif currentTool == Tool.RightTriangle:
+                    draw_rhombus(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
                 elif currentTool == Tool.Eraser:
                     smartbrush_draw(screen, colorBG, oldX, oldY, currX, currY, THICKNESS * 2)
                     base_layer.blit(screen, (0, 0))
@@ -178,6 +221,9 @@ while not done:
             elif currentTool == Tool.RightTriangle:
                 draw_right_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
                 base_layer.blit(screen, (0, 0))
+            elif currentTool == Tool.Rhombus:
+                draw_rhombus(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
+                base_layer.blit(screen, (0, 0))
 
         if event.type == pygame.KEYDOWN: 
             if event.key == pygame.K_b:
@@ -205,8 +251,12 @@ while not done:
                 print("equilateral triangle tool equipped")
                 currentTool = Tool.EquilateralTriangle
             if event.key == pygame.K_y:
-                print("equilateral triangle tool equipped")
+                print("right triangle tool equipped")
                 currentTool = Tool.RightTriangle
+            if event.key == pygame.K_p:
+                print("rhombus tool equipped")
+                currentTool = Tool.Rhombus
+
 
             if event.key == pygame.K_EQUALS:
                 if currentTool != Tool.Eyedropper:
@@ -220,7 +270,16 @@ while not done:
                 else:
                     print("decreased saturation")
                 THICKNESS -= 1
-            
+
+
+            if event.key == pygame.K_UP:
+                print("skewness increased")
+                SKEWNESS += 0.1
+            if event.key == pygame.K_DOWN:
+                print("skewness decreased")
+                SKEWNESS -= 0.1
+                
+        # SKEWNESS = max(1, min(SKEWNESS, 10000000))        
         THICKNESS = max(1, min(THICKNESS, 512))
 
     # pygame.draw.line(screen, currentColor, (prevX, prevY), (currX, currY), THICKNESS)
