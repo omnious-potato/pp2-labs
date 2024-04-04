@@ -1,4 +1,6 @@
-import pygame, random, time, sys
+import pygame
+import random
+import time, sys
 
 pygame.init()
 
@@ -37,6 +39,11 @@ score_rect = score.get_rect(topright = (WIDTH - 40, 0))
 
 clock = pygame.time.Clock()
 
+#custom event for game speed increase with time/progress
+INC_SPEED = pygame.USEREVENT + 1
+pygame.time.set_timer(INC_SPEED, 1000)
+
+#PC class
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -69,24 +76,43 @@ class Enemy(pygame.sprite.Sprite):
         else:
             self.rect.center = (35 + int((WIDTH - 60) * random.random()), 5)
 
+
 class Coin(pygame.sprite.Sprite): 
     def __init__(self):
         super().__init__()
-        self.image = pygame.transform.scale(pygame.image.load("./images/coin.jpg"), (40, 40))
+        self.price, self.image = self.get_coin_type()
+        # self.image =pygame.transform.scale(pygame.image.load("./images/coin.png"), (40, 30))
 
         self.rect = self.image.get_rect()
-        self.rect.center = (10 + int((WIDTH - 10) * random.random()), 5)
+        self.rect.center = (40 + int((WIDTH - 80) * random.random()), 5)
 
-        self.price = 1 
-    
+        
+    #function to generate coin type
+    def get_coin_type(self):
+        values = ["penny", "nickel", "dime"]
+        nominals = [1, 5, 10]
+        
+        probabilities = [0.90, 0.08, 0.02]
+        
+        chosen_coin = random.choices(values, weights=probabilities)[0]
+        value = nominals[values.index(chosen_coin)]
+
+        asset = pygame.transform.scale(pygame.image.load(f"./images/{chosen_coin}.png"), (36, 26))
+
+
+        return value, asset
+        
+
     def respawn(self):
-        self.rect.center = (10 + int((WIDTH - 10) * random.random()), 5)
+        self.rect.center = (40 + int((WIDTH - 80) * random.random()), 5)
+        self.price, self.image = self.get_coin_type()
 
     def move(self):
         if self.rect[1] + self.rect[3] < HEIGHT :
             self.rect.move_ip(0, 3)
         else:
-            self.rect.center = (10 + int((WIDTH - 10) * random.random()), 5)
+            # self.rect.center = (40 + int((WIDTH - 80) * random.random()), 5)
+            self.respawn()
 
 buffs = pygame.sprite.Group() #coins/pickups etc
 enemies = pygame.sprite.Group() #oncoming cars/obstacles
