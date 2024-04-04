@@ -9,6 +9,10 @@ class Tool(Enum): #enum for clarity
     Circle = 4
     Eyedropper = 5
     Eraser = 6
+    Square = 7
+    RightTriangle = 8
+    EquilateralTriangle = 9
+    Rhombus = 10
 
 pygame.init()
 
@@ -31,12 +35,12 @@ colorBG = colorWHITE
 screen.fill(colorBG)
 base_layer = screen.copy()
 
-
 clock = pygame.time.Clock()
 
 LMBpressed = False
 THICKNESS = 5
 
+#This used for 2-point tools tracking while dragging the mouse along the canvas
 currX = None
 currY = None
 
@@ -49,13 +53,42 @@ currentTool = Tool.Selector #by default, tool doing nothing is selected
 global currentColor
 currentColor = colorRED
 
-
+#returns proper rectangle given unordered coords
 def calculate_rect(x1, y1, x2, y2):
     return pygame.Rect(min(x1, x2), min(y1, y2), abs(x1 - x2), abs(y1 - y2))
 
 
-done = False
+def calculate_square(x1, y1, x2, y2):
+    side = min(abs(x1 - x2), abs(y1 - y2))
+    return pygame.Rect(min(x1, x2), min(y1, y2), side, side)
+    
 
+def draw_right_triangle(surface, color, x1, y1, x2, y2, stroke):
+    points = [(x1, y1), (x2, y2)]
+
+    direction_vector = (x2 - x1, y2 - y1)    
+    points.append((x2 + direction_vector[1], y2 - direction_vector[0]))
+    
+    pygame.draw.polygon(surface, color, points, stroke)
+
+
+def draw_equilateral_triangle(surface, color, x1, y1, x2, y2, stroke):
+    points = [(x2, y2)]
+    height = math.sqrt((x1-x2)**2 + (y1 - y2)**2)
+    side = int(height /math.sin(math.radians(60)))
+    
+    height_vector  = (x2 - x1, y2 - y1)
+    height = math.sqrt(height_vector[0]**2 + height_vector[1]**2)
+    if height < 1:
+        return 
+    side_vector = (-height_vector[1] /height * side / 2 + x1 , height_vector[0] / height * side / 2 + y1)
+    opposite_vector = (height_vector[1] /height * side / 2 + x1 , -height_vector[0] / height * side / 2 + y1)
+    points.append(side_vector)
+    points.append(opposite_vector)
+
+    pygame.draw.polygon(surface, color, points, stroke)
+
+done = False
 
 #color wheel asset
 color_wheel = pygame.image.load("images/color.png")
@@ -77,11 +110,14 @@ while not done:
     for event in pygame.event.get():
         if LMBpressed:
             screen.blit(base_layer, (0, 0))
-            if currentTool == Tool.Brush:
+            if currentTool == Tool.Brush: 
+                #brush actions are here because even if no mouse movement is present point should be drawn under cursor
                 smartbrush_draw(screen, currentColor, oldX, oldY, currX, currY, THICKNESS)
                 base_layer.blit(screen, (0, 0))
+        
         if event.type == pygame.QUIT:
             done = True
+        
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             print("LMB pressed!")
             LMBpressed = True
@@ -94,7 +130,7 @@ while not done:
         if event.type == pygame.MOUSEMOTION:
             # print("Position of the mouse:", event.pos)
 
-            if(currX != None): oldX = currX #coordinates for brushes
+            if(currX != None): oldX = currX #old/new motion coordinates for brush
             if(currY != None): oldY = currY
             
             currX = event.pos[0]
@@ -103,14 +139,16 @@ while not done:
             if LMBpressed: 
                 if currentTool == Tool.Rectangle:    
                     pygame.draw.rect(screen, currentColor, calculate_rect(prevX, prevY, currX, currY), THICKNESS)
+                elif currentTool == Tool.Square:
+                    pygame.draw.rect(screen, currentColor, calculate_square(prevX, prevY, currX, currY), THICKNESS)
                 elif currentTool == Tool.Circle:
                     pygame.draw.ellipse(screen, currentColor, calculate_rect(prevX, prevY, currX, currY), THICKNESS)
-                # elif currentTool == Tool.Brush:
-                    #pygame.draw.rect(screen, currentColor, (currX, currY, THICKNESS, THICKNESS))
-                    # base_layer.blit(screen, (0, 0))
+                elif currentTool == Tool.EquilateralTriangle:
+                    draw_equilateral_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
+                elif currentTool == Tool.RightTriangle:
+                    draw_right_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
                 elif currentTool == Tool.Eraser:
                     smartbrush_draw(screen, colorBG, oldX, oldY, currX, currY, THICKNESS * 2)
-                    # pygame.draw.rect(screen, colorBG, (currX, currY, THICKNESS * 2, THICKNESS * 2))
                     base_layer.blit(screen, (0, 0))
                 elif currentTool == Tool.Eyedropper:
                     #clamping values to avoid picking pixel color out of game window, otherwise, as it is crash occurs
@@ -131,7 +169,16 @@ while not done:
             elif currentTool == Tool.Circle:
                 pygame.draw.ellipse(screen, currentColor, calculate_rect(prevX, prevY, currX, currY), THICKNESS)
                 base_layer.blit(screen, (0, 0))
-                
+            elif currentTool == Tool.Square:
+                pygame.draw.rect(screen, currentColor, calculate_square(prevX, prevY, currX, currY), THICKNESS)
+                base_layer.blit(screen, (0, 0))
+            elif currentTool == Tool.EquilateralTriangle:
+                draw_equilateral_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
+                base_layer.blit(screen, (0, 0))
+            elif currentTool == Tool.RightTriangle:
+                draw_right_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
+                base_layer.blit(screen, (0, 0))
+
         if event.type == pygame.KEYDOWN: 
             if event.key == pygame.K_b:
                 print("brush tool equipped")
@@ -151,6 +198,15 @@ while not done:
             if event.key == pygame.K_i:
                 print("eydropper equipped")
                 currentTool = Tool.Eyedropper
+            if event.key == pygame.K_s:
+                print("square tool equipped")
+                currentTool = Tool.Square
+            if event.key == pygame.K_t:
+                print("equilateral triangle tool equipped")
+                currentTool = Tool.EquilateralTriangle
+            if event.key == pygame.K_y:
+                print("equilateral triangle tool equipped")
+                currentTool = Tool.RightTriangle
 
             if event.key == pygame.K_EQUALS:
                 if currentTool != Tool.Eyedropper:

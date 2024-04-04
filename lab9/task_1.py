@@ -17,7 +17,6 @@ colorBLACK = (0, 0, 0)
 BACKGROUND = pygame.image.load("./images/AnimatedStreet.png")
 
 
-
 def draw_polygon_alpha(surface, color, points): #this function allows to draw polygons with RGBA format
     lx, ly = zip(*points)
     min_x, min_y, max_x, max_y = min(lx), min(ly), max(lx), max(ly)
@@ -41,7 +40,7 @@ clock = pygame.time.Clock()
 
 #custom event for game speed increase with time/progress
 INC_SPEED = pygame.USEREVENT + 1
-pygame.time.set_timer(INC_SPEED, 1000)
+# pygame.time.set_timer(INC_SPEED, 1000)
 
 #PC class
 class Player(pygame.sprite.Sprite):
@@ -58,7 +57,7 @@ class Player(pygame.sprite.Sprite):
         
         #left-right movement
         if pressed[pygame.K_LEFT] and self.rect[0] > 0:
-            self.rect.move_ip(-5, 0)
+            self.rect.move_ip(-5 , 0)
         if pressed[pygame.K_RIGHT] and self.rect[0] + self.rect[2] < WIDTH:
             self.rect.move_ip(5, 0)
     
@@ -72,7 +71,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def move(self):
         if self.rect[1] + self.rect[3] < HEIGHT + 100:
-            self.rect.move_ip(0, 5)
+            self.rect.move_ip(0, GLOBAL_SPEED)
         else:
             self.rect.center = (35 + int((WIDTH - 60) * random.random()), 5)
 
@@ -89,16 +88,15 @@ class Coin(pygame.sprite.Sprite):
         
     #function to generate coin type
     def get_coin_type(self):
+        
         values = ["penny", "nickel", "dime"]
         nominals = [1, 5, 10]
-        
         probabilities = [0.90, 0.08, 0.02]
         
         chosen_coin = random.choices(values, weights=probabilities)[0]
         value = nominals[values.index(chosen_coin)]
 
         asset = pygame.transform.scale(pygame.image.load(f"./images/{chosen_coin}.png"), (36, 26))
-
 
         return value, asset
         
@@ -109,10 +107,14 @@ class Coin(pygame.sprite.Sprite):
 
     def move(self):
         if self.rect[1] + self.rect[3] < HEIGHT :
-            self.rect.move_ip(0, 3)
+            self.rect.move_ip(0, GLOBAL_SPEED - 3)
         else:
-            # self.rect.center = (40 + int((WIDTH - 80) * random.random()), 5)
             self.respawn()
+
+
+GLOBAL_SPEED = 5
+COIN_DIFFICULTY = 2
+CURRENT_WAVE_COINS = 0
 
 buffs = pygame.sprite.Group() #coins/pickups etc
 enemies = pygame.sprite.Group() #oncoming cars/obstacles
@@ -141,6 +143,9 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
+
+        if event.type == INC_SPEED:
+            GLOBAL_SPEED += 1
 
     screen.blit(BACKGROUND, (0, 0))
 
@@ -177,6 +182,13 @@ while not done:
     collided_coin = pygame.sprite.spritecollideany(P1, buffs) 
     if collided_coin != None:
         P1.coin_score += collided_coin.price
+        
+        #This handles whether we should increase game speed based on coins collected
+        CURRENT_WAVE_COINS += 1
+        if CURRENT_WAVE_COINS >= COIN_DIFFICULTY:
+            CURRENT_WAVE_COINS -= COIN_DIFFICULTY
+            pygame.event.post(pygame.event.Event(INC_SPEED))
+
         collided_coin.respawn() 
     
     pygame.display.flip()
