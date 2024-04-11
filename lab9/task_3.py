@@ -58,35 +58,38 @@ currentColor = colorRED
 def calculate_rect(x1, y1, x2, y2):
     return pygame.Rect(min(x1, x2), min(y1, y2), abs(x1 - x2), abs(y1 - y2))
 
-
+#returns square rectangle under given coords
 def calculate_square(x1, y1, x2, y2):
     side = min(abs(x1 - x2), abs(y1 - y2))
     return pygame.Rect(min(x1, x2), min(y1, y2), side, side)
     
 
-
+#draws rombus using given points as the diagonal as assuming diagonals' ration as SKEWNESS
 def draw_rhombus(surface, color, x1, y1, x2, y2, stroke):
-    points = [(x2, y2), (x1, y1)]
-    
-    
-    diagonal= (x2 - x1, y2 - y1)
+    points = [(x2, y2)]
+
+    diagonal= (x2 - x1, y2 - y1) #vector representing given diagonal
     half_diag = (diagonal[0]/2, diagonal[1]/2)
 
-    midpoint = ((x1 + x2)/2,(y1+y2)/2)
-    side_one =(-diagonal[1] + midpoint[0], diagonal[0] + midpoint[1])
-    side_length = math.sqrt(side_one[0]**2 + side_one[1]**2)
-    side_two =(diagonal[1] + midpoint[0], -diagonal[0] + midpoint[1])
+    midpoint = ((x1 + x2)/2,(y1+y2)/2) #center point of rombus
+    #orthogonal vector to diagonal from midpoint
+    side_one =(-diagonal[1] * abs(SKEWNESS) + midpoint[0], diagonal[0] * abs(SKEWNESS) + midpoint[1]) 
+    side_two =(diagonal[1]  * abs(SKEWNESS) + midpoint[0], -diagonal[0] * abs(SKEWNESS) + midpoint[1])
 
+    side_length = math.sqrt(side_one[0]**2 + side_one[1]**2)
     if side_length < 1:
         return
+    
+    #order of points is important here
     points.append(side_one)
+    points.append((x1, y1))
     points.append(side_two)
 
-    # pygame.draw.polygon(surface, color, points, stroke)
-    for x in points:
-        pygame.draw.circle(surface, color, x, stroke)
+    pygame.draw.polygon(surface, color, points, stroke)
+    for x in points: #additional code to make thick figures look less chagged on vertices
+        pygame.draw.circle(surface, color, x, int(0.6 * stroke / math.sqrt(2)))
 
-
+#right triangle put on hypothenuse on given line with assumed SKEWNESS parameter
 def draw_right_triangle(surface, color, x1, y1, x2, y2, stroke):
     points = [(x1, y1), (x2, y2)]
 
@@ -100,13 +103,17 @@ def draw_right_triangle(surface, color, x1, y1, x2, y2, stroke):
         return
 
     side_length = hypo_length * math.cos(alpha_angle)
-    
+
+    #rotating vector along known angle
     side_vector = (hypo_vector[0] * side_length / hypo_length, hypo_vector[1] * side_length / hypo_length) #length-normalised
     side_vector = (side_vector[0] * math.cos(alpha_angle) - side_vector[1] * math.sin(alpha_angle), \
                    side_vector[0] * math.sin(alpha_angle) + side_vector[1] * math.cos(alpha_angle)) #angle-normalised
     
     points.append((side_vector[0] + x1, side_vector[1] + y1))
+
     pygame.draw.polygon(surface, color, points, stroke)
+    for x in points: 
+        pygame.draw.circle(surface, color, x, int(0.6 * stroke / math.sqrt(2)))
 
 
 #draws equilateral triangle with any rotational orientation
@@ -128,6 +135,9 @@ def draw_equilateral_triangle(surface, color, x1, y1, x2, y2, stroke):
     points.append(opposite_vector)
 
     pygame.draw.polygon(surface, color, points, stroke)
+    for x in points: 
+        pygame.draw.circle(surface, color, x, int(0.6 * stroke / math.sqrt(2)))
+
 
 done = False
 
@@ -169,15 +179,14 @@ while not done:
             screen.blit(color_wheel, (0,0))
             
         if event.type == pygame.MOUSEMOTION:
-            # print("Position of the mouse:", event.pos)
-
             if(currX != None): oldX = currX #old/new motion coordinates for brush
             if(currY != None): oldY = currY
             
+            #updating to current mouse positions
             currX = event.pos[0]
             currY = event.pos[1]
 
-            if LMBpressed: 
+            if LMBpressed: #action when LMB is held down
                 if currentTool == Tool.Rectangle:    
                     pygame.draw.rect(screen, currentColor, calculate_rect(prevX, prevY, currX, currY), THICKNESS)
                 elif currentTool == Tool.Square:
@@ -188,7 +197,7 @@ while not done:
                     draw_equilateral_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
                 elif currentTool == Tool.RightTriangle:
                     draw_right_triangle(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
-                elif currentTool == Tool.RightTriangle:
+                elif currentTool == Tool.Rhombus:
                     draw_rhombus(screen, currentColor, prevX, prevY, currX, currY, THICKNESS)
                 elif currentTool == Tool.Eraser:
                     smartbrush_draw(screen, colorBG, oldX, oldY, currX, currY, THICKNESS * 2)
