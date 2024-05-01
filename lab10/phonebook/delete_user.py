@@ -37,8 +37,8 @@ def delete_student(name=None, phone=None):
         return deleted_row_count
 
 if __name__ == '__main__':
-    print("Syntax: ./delete_user.py [--name|--phone] <value>")
     if len(sys.argv) < 3:
+        print("Syntax: ./delete_user.py [--name|--phone] <value>")
         sys.exit()
     if sys.argv[1] == "--name":
         print(f"Updated {delete_student(name=sys.argv[2])} rows")

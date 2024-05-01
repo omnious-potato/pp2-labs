@@ -6,7 +6,7 @@ def get_students():
     try:
         with psycopg2.connect(**config) as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT student_ID, student_name, student_phone, enroll_year FROM students ORDER BY student_name")
+                cur.execute("SELECT student_ID, student_name, student_phone, enroll_year FROM students ORDER BY enroll_year, student_name")
                 print("The number of students: ", cur.rowcount)
                 rows = cur.fetchall()
 

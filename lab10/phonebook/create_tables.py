@@ -6,9 +6,9 @@ def create_tables():
     commands = (
         """
         CREATE TABLE  students (
-            student_ID VARCHAR(32) PRIMARY KEY,
-            student_name VARCHAR(255) NOT NULL,
-            student_phone VARCHAR(12),
+            student_ID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            student_name VARCHAR NOT NULL,
+            student_phone VARCHAR,
             enroll_year INTEGER NOT NULL
         )
         """,)

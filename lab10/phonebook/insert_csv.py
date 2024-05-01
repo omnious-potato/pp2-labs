@@ -17,8 +17,8 @@ def csv_to_list(csv_path):
     return data
 
 def insert_students_csv(student_list):
-    sql = """INSERT INTO students(student_ID, student_name, student_phone, enroll_year)
-             VALUES(%s, %s, %s, %s) RETURNING *"""
+    sql = """INSERT INTO students(student_name, student_phone, enroll_year)
+             VALUES(%s, %s, %s) RETURNING *"""
     config = load_config()
     rows = []
 
