@@ -22,7 +22,11 @@ class Config:
             self.width = width
             self.height = height
             self.fps = fps
+            
             self.player_id = None
+            self.score_pb = None
+            self.level_pb = None
+
             self.__initialized = True
 
     def set(self, key, value):
@@ -51,7 +55,7 @@ class InputBox:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.rect.collidepoint(event.pos):
-                    self.active = not self.active
+                    self.active = True
                 else:
                     self.active = False
             if event.type == pygame.KEYDOWN:
@@ -62,12 +66,16 @@ class InputBox:
                         self.text = self.text[:-1]
                     else:
                         self.text += event.unicode
+                        self.text = re.sub(r'[^a-zA-Z0-9.,;{}()-_=+ <>?/!]', '', self.text)
 
     def Update(self):
-        pass
+        if self.active:
+            self.color = colorBLUE
+        else:
+            self.color = colorWHITE
 
     def Render(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect, 2)
+        pygame.draw.rect(screen, self.color, self.rect, 2)    
         text_surface = self.font.render(self.text, True, (0, 0, 0))
         screen.blit(text_surface, (self.rect.x + 5, self.rect.y + 5))
 
@@ -113,9 +121,7 @@ def run_game(width, height, fps, starting_scene):
             elif event.type == pygame.KEYDOWN:
                 alt_pressed = pressed_keys[pygame.K_LALT] or \
                               pressed_keys[pygame.K_RALT]
-                if event.key == pygame.K_ESCAPE:
-                    quit_attempt = True
-                elif event.key == pygame.K_F4 and alt_pressed:
+                if event.key == pygame.K_F4 and alt_pressed:
                     quit_attempt = True
             
             if quit_attempt:
@@ -137,20 +143,37 @@ def run_game(width, height, fps, starting_scene):
 class CredentialsScene(SceneBase):
     def __init__(self, new_game=True):
         super().__init__()
-        
+
         pygame.font.init()
         self.font = pygame.font.SysFont("sfpro", 60)
+
         self.isNewGame = new_game
+        self.text_elems = ["Login", "Password", "Proceeding to game...", "Incorrect login/passwords combination"]
         
+        #input box for login
         self.name_box = InputBox(Config().width//2-100, Config().height//2 - 50, 200, 30)
+        self.name_box.active = True
+
+        #input box for password
         self.pass_box = InputBox(Config().width//2-100, Config().height//2 + 20, 200, 30)
 
 
     def ProcessInput(self, events, pressed_keys):
         for event in events:
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_TAB:
+                    #change input field focus to another
+                    if self.name_box.active:
+                        self.name_box.active = False
+                        self.pass_box.active = True
+                    else:
+                        self.name_box.active = True
+                        self.pass_box.active = False
+
+                if event.key == pygame.K_ESCAPE:
+                    self.SwitchToScene(MenuScene())
                 if event.key == pygame.K_RETURN and self.name_box.text != '' and self.pass_box.text != '':
-                    #chec whether user exist
+                    #check whether user exist
                     tmp_name = self.name_box.text
                     tmp_name = re.sub(r'[^a-zA-Z0-9.,;{}()-_=+ <>?/!]', '', tmp_name)
                     tmp_pass = self.pass_box.text
@@ -166,11 +189,8 @@ class CredentialsScene(SceneBase):
                             Config().set("id", result[0])
 
                             #proceed to game scene
-                            if self.isNewGame:
-                                self.SwitchToScene(GameScene())
-                            else:
-                                RestoredScene = pickle.load("1.sav")
-                                self.SwitchToScene(RestoredScene)
+                            self.SwitchToScene(GameScene())
+                            
 
                         else: 
                             #reset text field if credentials aren't correct
@@ -184,12 +204,7 @@ class CredentialsScene(SceneBase):
                         Config().set("id", result[0])
 
                         #proceed to game scene
-                        if self.isNewGame:
-                            self.SwitchToScene(GameScene())
-                        else:
-                            RestoredScene = pickle.load("1.sav")
-                            self.SwitchToScene(RestoredScene)
-                    
+                        self.SwitchToScene(GameScene())            
 
         self.name_box.ProcessInput(events, pressed_keys)
         self.pass_box.ProcessInput(events, pressed_keys)
@@ -202,6 +217,11 @@ class CredentialsScene(SceneBase):
         screen.fill((255, 0, 0))
         self.name_box.Render(screen)
         self.pass_box.Render(screen)
+
+        for i, text in enumerate(self.text_elems[:2]):
+            rendered_text = self.font.render(text, True, colorBLACK)
+            screen.blit(rendered_text, (90, i * 60 + 250))
+
         
 
 class MenuScene(SceneBase):
@@ -270,16 +290,16 @@ class GameScene(SceneBase):
         self.font = pygame.font.SysFont("sfpro", 60)
 
 
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        # Don't pickle font, as it's not pickle-able
-        del state["font"]
-        return state
+    # def __getstate__(self):
+    #     state = self.__dict__.copy()
+    #     # Don't pickle font, as it's not pickle-able
+    #     del state["font"]
+    #     return state
 
 
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        self.font  = pygame.font.SysFont("sfpro", 60)
+    # def __setstate__(self, state):
+    #     self.__dict__.update(state)
+    #     self.font  = pygame.font.SysFont("sfpro", 60)
 
     def level_up(self):
         #making next level "harder" by increasing level up score cap and game speed
