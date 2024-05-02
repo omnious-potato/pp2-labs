@@ -135,9 +135,6 @@ def run_game(width, height, fps, starting_scene):
 
 # The rest is code where you implement your game using the Scenes model
 class CredentialsScene(SceneBase):
-
-
-    
     def __init__(self, new_game=True):
         super().__init__()
         
@@ -148,18 +145,6 @@ class CredentialsScene(SceneBase):
         self.name_box = InputBox(Config().width//2-100, Config().height//2 - 50, 200, 30)
         self.pass_box = InputBox(Config().width//2-100, Config().height//2 + 20, 200, 30)
 
-
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        # Don't pickle font, as it's not pickle-able
-        del state["font"]
-        return state
-
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        self.font  = pygame.font.SysFont("sfpro", 60)
-    
 
     def ProcessInput(self, events, pressed_keys):
         for event in events:
@@ -284,6 +269,18 @@ class GameScene(SceneBase):
         pygame.font.init()
         self.font = pygame.font.SysFont("sfpro", 60)
 
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # Don't pickle font, as it's not pickle-able
+        del state["font"]
+        return state
+
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.font  = pygame.font.SysFont("sfpro", 60)
+
     def level_up(self):
         #making next level "harder" by increasing level up score cap and game speed
         self.requirement_to_next_level += 2
@@ -321,7 +318,7 @@ class GameScene(SceneBase):
         if self.paused:
             self.paused = False
             with open("snake.sav", "wb") as f:
-                pickle.dump(self.snake, f)
+                pickle.dump(self, f)
             self.SwitchToScene(MenuScene)
 
         
